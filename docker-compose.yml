@@ -1,0 +1,40 @@
+nginx:
+  image: nginx:latest
+  links:
+    - letsencrypt
+    - git
+    - jenkins
+  restart: unless-stopped
+  ports: 
+    - "80:80"
+    - "443:443"
+  volumes:
+    - ./conf-nginx:/etc/nginx
+    - ./letsencrypt:/etc/letsencrypt
+    - ./html:/etc/nginx/html
+letsencrypt:
+  image: certbot/certbot:latest
+  entrypoint : "sh -c 'sleep 600s'"
+  volumes:
+    - ./letsencrypt:/etc/letsencrypt
+  ports:
+    - "80"
+    - "443"
+git:
+  image: gitlab/gitlab-ce:latest
+  restart: unless-stopped
+  ports:
+    - "80"
+    - "10022:22"
+  volumes:
+    - ./gitlab/opt:/var/opt/gitlab
+    - ./gitlab/etc:/etc/gitlab
+    - ./gitlab/log:/var/log/gitlab
+jenkins:
+  image : jenkins
+  restart: unless-stopped
+  volumes:
+    - ./jenkins:/var/jenkins_home
+  ports:
+    - "8080"
+    - "5000"
